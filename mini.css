@@ -10,6 +10,8 @@
 #captcha-main-div {
     position: relative;
     width: 300px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #captcha-div {
@@ -45,6 +47,8 @@
 #checkbox-container {
     width: 24px;
     height: 24px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #captcha-checkbox {
