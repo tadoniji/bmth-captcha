@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./mini.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <title>Mini Captcha Oli Sykes</title>
+</head>
+<body style="margin: 0; background: transparent;">
+
+    <div class="captcha-component">
+        <div id="captcha-main-div">
+            <div id="captcha-div">
+                <!-- Fenêtre de résolution positionnée au-dessus -->
+                <div id="solve-box">
+                    <div id="solve-header">
+                        <div id="solve-title-subtext" style="font-size: 13px;">Sélectionnez toutes les images d'</div>
+                        <div id="solve-title-text">Oli Sykes</div>
+                    </div>
+                    
+                    <div id="solve-image-main-container"></div>
+                    
+                    <div id="solve-image-error-msg">Veuillez réessayer.</div>
+
+                    <div id="solve-footer">
+                        <div class="icon-group">
+                            <i id="refresh" class="fa-solid fa-rotate-right" title="Nouveau défi" style="cursor:pointer;"></i>
+                            <i id="audio" class="fa-solid fa-headphones" title="Défi audio" style="cursor:pointer;"></i>
+                            <i id="information" class="fa-solid fa-circle-info" title="Aide" style="cursor:pointer;"></i>
+                        </div>
+                        <button id="verify">VALIDER</button>
+                    </div>
+                    <div id="information-text" style="display:none; padding: 10px; font-size: 11px; background: #f9f9f9; border-top: 1px solid #eee;">
+                        Cliquez sur les cases avec l'objet décrit. Quand il n'y en a plus, cliquez sur VALIDER.
+                    </div>
+                </div>
+
+                <div id="captcha-left">
+                    <div id="checkbox-container">
+                        <div id="captcha-checkbox" tabindex="0"></div>
+                        <div id="captcha-checkbox-spinner" class="spinner"></div>
+                    </div>
+                    <div id="captcha-text">Je ne suis pas un robot</div>
+                </div>
+                
+                <div id="captcha-right">
+                    <img id="captcha-img" src="./JCLOH98.png" alt="reCAPTCHA"/>
+                    <div id="captcha-subtext">
+                        <a href="#">Confidentialité</a> - <a href="#">Conditions</a>
+                    </div>
+                </div>
+            </div>
+            <div id="captcha-error-msg">Veuillez vérifier que vous n'êtes pas un robot.</div>
+        </div>
+        
+        <button id="submit">Envoyer</button>
+    </div>
+
+    <!-- Section cachée pour garder la compatibilité avec le script d'origine -->
+    <div id="solve-image-div" style="display:none;"></div>
+    <div id="solve-audio-div" style="display:none;"></div>
+
+    <script src="index.js"></script>
+</body>
+</html>

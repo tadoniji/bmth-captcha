@@ -2,125 +2,161 @@
 // make the checkbox div focusable
 const captchaCheckbox = document.getElementById("captcha-checkbox")
 const checkboxSpinner = document.getElementById("captcha-checkbox-spinner")
-captchaCheckbox.addEventListener("mousedown",()=> {
-    // console.log("focused")
-    captchaCheckbox.classList.add("focused")
-    captchaCheckbox.classList.remove("blurred")
+const solveBox = document.getElementById("solve-box")
+const captchaMainDiv = document.getElementById("captcha-main-div")
+const captchaErrorMsg = document.getElementById("captcha-error-msg")
+const solveImageErrorMsg = document.getElementById("solve-image-error-msg")
+const solveImageContainer = document.getElementById("solve-image-main-container")
 
-})
-
-captchaCheckbox.addEventListener("mouseup",()=> {
-    // console.log("blurred")
-    captchaCheckbox.classList.add("blurred")
-    captchaCheckbox.classList.remove("focused")
-})
+const imageCount = 28
+const nonOliImages = [2, 4, 5, 6, 7, 8, 9, 11]
+let isVerified = false
+let errorCount = 0
+let isLocked = false
 
 captchaCheckbox.addEventListener("click",()=> {
+    if (isVerified || isLocked) return
+    
     checkboxSpinner.style.display = "block"
     captchaCheckbox.style.display = "none"
-    captchaCheckbox.style.visibility = "false"
+    
     setTimeout(()=>{
         captchaCheckbox.style.display = "block"
         checkboxSpinner.style.display = "none"
 
-        // show the solve box
-        const solveBox = document.getElementById("solve-box")
         if (solveBox.style.display == "block") {
             solveBox.style.display = "none"
         }
         else {
             solveBox.style.display = "block"
+            initGrid() 
         }
-    },Math.floor(Math.random()*1000)+200)
+    },Math.floor(Math.random()*600)+200)
 })
 
-// show error if submit button is click without checking the checkbox
 document.getElementById("submit").addEventListener("click",()=>{
-    // console.log("clicked")
-    document.getElementById("captcha-main-div").classList.add("error")
-    document.getElementById("captcha-error-msg").style.display = "block"
+    if (isVerified) {
+        window.location.href = "https://listen.tadoniji.fr";
+        return
+    }
+    captchaMainDiv.classList.add("error")
+    captchaErrorMsg.style.display = "block"
 })
 
-// fill up the solve-image-container
-const imageCount = 15
-const solveImageContainer = document.getElementById("solve-image-main-container")
-for (let i=0; i<3; i++) {
-    for (let j=0; j<3; j++) {
+const refreshImage = (container, oldId) => {
+    const image = container.querySelector("img")
+    image.classList.add("fade-out")
+    container.style.pointerEvents = "none"
+    
+    setTimeout(()=>{
+        const newId = Math.floor(Math.random()*imageCount)+1
+        image.setAttribute("src",`./images/img${newId}.jpg`)
+        image.classList.remove("fade-out")
+        container.style.pointerEvents = "auto"
+        
+        // Update the click listener with the new ID
+        const newHandler = () => handleImageClick(container, newId)
+        container.onclick = newHandler 
+    },800)
+}
+
+const handleImageClick = (container, imageId) => {
+    if (isVerified || isLocked) return
+
+    const isOli = !nonOliImages.includes(imageId)
+
+    if (isOli) {
+        // Correct: it's Oli, so refresh/replace the image
+        refreshImage(container, imageId)
+        solveImageErrorMsg.style.display = "none"
+    } else {
+        // Wrong: it's not Oli
+        errorCount++
+        container.classList.add("error-shake")
+        solveImageErrorMsg.innerText = `Erreur (${errorCount}/4). Ne cliquez pas sur cette image !`
+        solveImageErrorMsg.style.display = "block"
+        
+        setTimeout(() => container.classList.remove("error-shake"), 300)
+
+        if (errorCount >= 4) {
+            failCaptcha()
+        }
+    }
+}
+
+const failCaptcha = () => {
+    isLocked = true
+    solveBox.style.display = "none"
+    captchaCheckbox.innerHTML = '<div class="captcha-error-cross"><i class="fa-solid fa-xmark"></i></div>'
+    captchaCheckbox.style.borderColor = "#d93025"
+    
+    setTimeout(() => {
+        isLocked = false
+        errorCount = 0
+        captchaCheckbox.innerHTML = ""
+        captchaCheckbox.style.borderColor = "rgb(193,193,193)"
+        solveImageErrorMsg.style.display = "none"
+    }, 3000)
+}
+
+const initGrid = () => {
+    solveImageContainer.innerHTML = ""
+    errorCount = 0
+    let pool = []
+    for(let i=1; i<=imageCount; i++) pool.push(i)
+    pool.sort(() => Math.random() - 0.5)
+
+    for (let i=0; i<9; i++) {
+        const imageId = pool[i]
         const imageContainer = document.createElement("div")
         imageContainer.classList.add("solve-image-container")
 
         const image = document.createElement("img")
-        image.setAttribute("src",`./images/img${((i*3)+j)+1}.jpg`)
+        image.setAttribute("src",`./images/img${imageId}.jpg`)
         image.classList.add("solve-image")
-        image.addEventListener("click",()=>{
-            refreshImage(image)
-        })
+        
+        imageContainer.onclick = () => handleImageClick(imageContainer, imageId)
+
         imageContainer.appendChild(image)
         solveImageContainer.appendChild(imageContainer)
     }
 }
 
-// image on click will refresh new image
-const refreshImage = (image) => {
-    image.classList.add("fade-out") //fade out animation
-    image.style.pointerEvents = "none"; //make it unclickable
-    setTimeout(()=>{
-        image.setAttribute("src","")
-        image.setAttribute("src",`./images/img${Math.floor(Math.random()*imageCount)+1}.jpg`)
-        image.classList.remove("fade-out")
-        image.style.pointerEvents = "auto"; //make it clickable again
-    },1000)
-}
-
-// show try again when verify is click
 document.getElementById("verify").addEventListener("click",()=> {
-    document.getElementById("solve-image-error-msg").style.display = "block"
-})
+    const images = solveImageContainer.querySelectorAll("img")
+    let oliRemaining = false
 
-// refresh everything when refresh is clicked
-const refreshButton = document.getElementById("refresh")
-refreshButton.addEventListener("click",()=>{
-    refreshButton.style.pointerEvents = "none"
-    solveImageContainer.classList.add("fade-out")
-    document.getElementById("solve-image-error-msg").style.display = "none"
-    setTimeout(()=> {
-        solveImageContainer.classList.remove("fade-out")
-        solveImageContainer.innerHTML = ""
-        for (let i=0; i<3; i++) {
-            for (let j=0; j<3; j++) {
-                const imageContainer = document.createElement("div")
-                imageContainer.classList.add("solve-image-container")
-        
-                const image = document.createElement("img")
-                image.setAttribute("src",`./images/img${Math.floor(Math.random()*imageCount)+1}.jpg`)
-                image.classList.add("solve-image")
-                image.addEventListener("click",()=>{
-                    refreshImage(image)
-                })
-                
-                imageContainer.appendChild(image)
-                solveImageContainer.appendChild(imageContainer)
-            }
+    images.forEach(img => {
+        const src = img.getAttribute("src")
+        const id = parseInt(src.match(/img(\d+)\.jpg/)[1])
+        if (!nonOliImages.includes(id)) {
+            oliRemaining = true
         }
-        refreshButton.style.pointerEvents = "auto"
-    },1000)
-   
+    })
+
+    if (!oliRemaining) {
+        isVerified = true
+        solveBox.style.display = "none"
+        captchaCheckbox.innerHTML = '<i class="fa-solid fa-check" style="color: #2c8a3c; font-size: 20px; display: flex; align-items: center; justify-content: center; height: 100%;"></i>'
+        captchaCheckbox.style.border = "none"
+        captchaCheckbox.style.cursor = "default"
+        captchaMainDiv.classList.remove("error")
+        captchaErrorMsg.style.display = "none"
+    } else {
+        solveImageErrorMsg.innerText = "Il reste encore des photos d'Oli Sykes !"
+        solveImageErrorMsg.style.display = "block"
+    }
 })
 
+document.getElementById("refresh").addEventListener("click", () => {
+    initGrid()
+})
 
-// toggle information
 document.getElementById("information").addEventListener("click",() =>{
     const information = document.getElementById("information-text")
-    if (information.style.display == "block") {
-        information.style.display = "none"
-    }
-    else {
-        information.style.display = "block"
-    }
+    information.style.display = (information.style.display == "block") ? "none" : "block"
 })
 
-// show audio div 
 document.getElementById("audio").addEventListener("click",()=> {
-    document.getElementById("solve-image-div").style.display = "none"
-    document.getElementById("solve-audio-div").style.display = "block"
+    alert("Le défi audio n'est pas disponible !")
 })
